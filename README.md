@@ -11,33 +11,58 @@ type to fit the data.
 4. Store the results in an array
 5. Represent the result in graphical representation as given below.
 ### PROGRAM:
+
+```py
+
+import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 
-import numpy as np
-
-data = [3, 16, 156, 47, 246, 176, 233, 140, 130,
-101, 166, 201, 200, 116, 118, 247,
-209, 52, 153, 232, 128, 27, 192, 168, 208,
-187, 228, 86, 30, 151, 18, 254,
-76, 112, 67, 244, 179, 150, 89, 49, 83, 147, 90,
-33, 6, 158, 80, 35, 186, 127]
-
-lags = range(35)
+data = pd.read_csv("user_behavior_timeseries.csv")
+data.columns = data.columns.str.strip()
 
 
-#Pre-allocate autocorrelation table
+data['Date'] = pd.to_datetime(data['Date'])
+data.set_index('Date', inplace=True)
 
-#Mean
+data = data.groupby('Date').mean(numeric_only=True)
 
-#Variance
+col = "App Usage Time"
+series = data[col].values
 
-#Normalized data
+series = series + np.random.randint(-20,20,len(series))
 
-#Go through lag components one-by-one
+# ACF Calculation
+N = len(series)
+lags = range(20)
 
-#display the graph
+mean_val = np.mean(series)
+var_val = np.var(series)
 
+acf_values = []
+
+for lag in lags:
+    if lag == 0:
+        acf_values.append(1)
+    else:
+        cov = np.sum((series[:-lag] - mean_val) * (series[lag:] - mean_val)) / N
+        acf_values.append(cov / var_val)
+
+# Plot
+plt.figure(figsize=(10,5))
+plt.stem(lags, acf_values)
+
+plt.title("ACF - Output")
+plt.xlabel("Lag")
+plt.ylabel("Correlation")
+plt.grid(True)
+
+plt.show()
+
+```
 ### OUTPUT:
+
+![ACF](image.png)
 
 ### RESULT:
         Thus we have successfully implemented the auto correlation function in python.
